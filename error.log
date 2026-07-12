@@ -1,0 +1,130 @@
+[2026-07-11 11:01:33.522103] === GUI starting ===
+[2026-07-11 11:01:33.601053] GUI started successfully
+[2026-07-11 11:03:59.799945] === GUI starting ===
+[2026-07-11 11:03:59.878684] GUI started successfully
+[2026-07-11 11:04:39.663599] GUI closed by user
+[2026-07-11 11:04:39.677707] === GUI exited ===
+[2026-07-11 14:41:23.063587] === GUI starting ===
+[2026-07-11 14:41:23.210827] GUI started successfully
+[2026-07-11 14:41:35.179816] GUI closed by user
+[2026-07-11 14:41:35.187902] === GUI exited ===
+[2026-07-11 18:28:32.945392] === GUI starting ===
+[2026-07-11 18:28:33.071565] GUI started successfully
+[2026-07-11 18:29:30.473564] GUI closed by user
+[2026-07-11 18:29:30.485944] === GUI exited ===
+[2026-07-11 18:30:30.156717] === GUI starting ===
+[2026-07-11 18:30:30.231655] GUI started successfully
+[2026-07-11 18:30:44.486588] GUI closed by user
+[2026-07-11 18:30:44.498768] === GUI exited ===
+[2026-07-11 18:42:57.951434] === GUI starting ===
+[2026-07-11 18:42:58.026008] GUI started successfully
+[2026-07-11 18:43:31.681450] GUI closed by user
+[2026-07-11 18:43:31.695308] === GUI exited ===
+[2026-07-11 18:43:46.888906] === GUI starting ===
+[2026-07-11 18:43:46.962775] GUI started successfully
+[2026-07-11 18:44:05.145191] GUI closed by user
+[2026-07-11 18:44:05.158331] === GUI exited ===
+[2026-07-11 18:50:40.316595] === GUI starting ===
+[2026-07-11 18:50:40.393128] GUI started successfully
+[2026-07-11 18:51:41.626937] === GUI starting ===
+[2026-07-11 18:51:41.701729] GUI started successfully
+[2026-07-11 18:52:09.352170] UNHANDLED EXCEPTION:
+Traceback (most recent call last):
+  File "C:\Users\MECHREVO\Desktop\python\gui.py", line 360, in <module>
+    main()
+  File "C:\Users\MECHREVO\Desktop\python\gui.py", line 355, in main
+    root.mainloop()
+  File "C:\Users\MECHREVO\AppData\Local\Programs\Python\Python311\Lib\tkinter\__init__.py", line 1485, in mainloop
+    self.tk.mainloop(n)
+KeyboardInterrupt
+
+[2026-07-11 18:52:50.483883] === GUI starting ===
+[2026-07-11 18:52:50.560830] GUI started successfully
+[2026-07-11 18:53:26.909471] GUI closed by user
+[2026-07-11 18:53:26.926451] === GUI exited ===
+[2026-07-11 20:47:50.669910] === GUI starting ===
+[2026-07-11 20:47:50.749404] GUI started successfully
+[2026-07-11 20:47:55.092321] GUI closed by user
+[2026-07-11 20:47:55.107971] === GUI exited ===
+[2026-07-11 20:49:10.426016] === GUI starting ===
+[2026-07-11 20:49:10.505693] GUI started successfully
+[2026-07-11 20:49:37.402389] GUI closed by user
+[2026-07-11 20:49:37.429520] === GUI exited ===
+[2026-07-11 20:56:59.236249] === GUI starting ===
+[2026-07-11 20:56:59.331193] GUI started successfully
+[2026-07-11 20:57:17.020801] GUI closed by user
+[2026-07-11 20:57:17.035751] === GUI exited ===
+[2026-07-11 21:15:26.187227] === GUI starting ===
+[2026-07-11 21:15:26.266664] GUI started successfully
+[2026-07-11 21:15:46.361626] GUI closed by user
+[2026-07-11 21:15:46.377526] === GUI exited ===
+[2026-07-11 21:27:16.106070] === GUI starting ===
+[2026-07-11 21:27:16.200997] GUI started successfully
+[2026-07-11 21:27:36.140403] GUI closed by user
+[2026-07-11 21:27:36.156402] === GUI exited ===
+[2026-07-11 21:30:56.005277] === GUI starting ===
+[2026-07-11 21:30:56.084454] GUI started successfully
+[2026-07-11 21:31:37.999298] GUI closed by user
+[2026-07-11 21:31:38.015014] === GUI exited ===
+[2026-07-11 22:11:26.318119] === GUI starting ===
+[2026-07-11 22:11:26.438212] GUI started successfully
+[2026-07-11 22:13:44.113210] GUI closed by user
+[2026-07-11 22:13:44.140943] === GUI exited ===
+[2026-07-11 22:14:13.590158] === GUI starting ===
+[2026-07-11 22:14:13.764703] GUI started successfully
+[2026-07-11 22:14:35.460961] GUI closed by user
+[2026-07-11 22:14:35.476776] === GUI exited ===
+[2026-07-12 07:33:55.380603] === GUI starting ===
+[2026-07-12 07:33:55.585122] GUI started successfully
+[2026-07-12 07:34:40.219065] GUI closed by user
+[2026-07-12 07:34:40.235150] === GUI exited ===
+[2026-07-12 07:46:46.417593] === GUI starting ===
+[2026-07-12 07:46:46.576387] GUI started successfully
+[2026-07-12 07:47:02.526434] GUI closed by user
+[2026-07-12 07:47:02.538669] === GUI exited ===
+[2026-07-12 08:14:17.770510] === GUI starting ===
+[2026-07-12 08:14:17.849940] GUI started successfully
+[2026-07-12 08:15:02.170173] GUI closed by user
+[2026-07-12 08:15:02.186069] === GUI exited ===
+[2026-07-12 08:15:06.463400] === GUI starting ===
+[2026-07-12 08:15:06.558208] GUI started successfully
+[2026-07-12 08:15:09.954604] GUI closed by user
+[2026-07-12 08:15:09.986316] === GUI exited ===
+[2026-07-12 08:19:04.821069] === GUI starting ===
+[2026-07-12 08:19:04.900590] GUI started
+[2026-07-12 08:19:47.154570] GUI closed
+[2026-07-12 08:19:47.168305] === GUI exited ===
+[2026-07-12 08:20:17.746482] === GUI starting ===
+[2026-07-12 08:20:17.825501] GUI started
+[2026-07-12 08:20:20.270738] GUI closed
+[2026-07-12 08:20:20.285189] === GUI exited ===
+[2026-07-12 08:21:07.758803] === GUI starting ===
+[2026-07-12 08:21:07.837547] GUI started
+[2026-07-12 08:21:10.843113] GUI closed
+[2026-07-12 08:21:10.875501] === GUI exited ===
+[2026-07-12 08:22:34.078674] === GUI starting ===
+[2026-07-12 08:22:34.158058] GUI started
+[2026-07-12 08:22:40.686241] GUI closed
+[2026-07-12 08:22:40.717974] === GUI exited ===
+[2026-07-12 08:24:12.133829] === GUI starting ===
+[2026-07-12 08:24:12.213155] GUI started
+[2026-07-12 08:25:14.953875] GUI closed
+[2026-07-12 08:25:14.985292] === GUI exited ===
+[2026-07-12 08:29:44.961379] === GUI starting ===
+[2026-07-12 08:29:45.040367] GUI started
+[2026-07-12 08:30:32.935036] GUI closed
+[2026-07-12 08:30:32.949151] === GUI exited ===
+[2026-07-12 11:52:11.636522] === GUI starting ===
+[2026-07-12 11:52:21.510361] === GUI starting ===
+[2026-07-12 11:54:27.822271] === GUI starting ===
+[2026-07-12 11:54:27.870259] GUI started
+[2026-07-12 11:54:30.549855] GUI closed
+[2026-07-12 11:54:30.565506] === GUI exited ===
+[2026-07-12 11:55:16.167965] === GUI starting ===
+[2026-07-12 11:55:16.229696] GUI started
+[2026-07-12 11:55:18.653194] GUI closed
+[2026-07-12 11:55:18.678002] === GUI exited ===
+[2026-07-12 13:37:02.580849] === GUI starting ===
+[2026-07-12 13:37:02.653153] GUI started
+[2026-07-12 13:38:17.917033] GUI closed
+[2026-07-12 13:38:17.936237] === GUI exited ===

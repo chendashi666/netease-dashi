@@ -1,0 +1,357 @@
+================================================================================
+        NetEase Cloud Music Toolkit - Development Documentation
+================================================================================
+  Generated: 2026-07-12
+  Purpose: Quick reference for future improvements and debugging
+  Project Root: C:\Users\MECHREVO\Desktop\python
+
+================================================================================
+1. Project File Structure
+================================================================================
+
+  gui.py               - tkinter GUI (Parse+Download tab, NCM Decrypt tab) [476 lines]
+  main.py              - CLI entry (parse/decrypt/cookie/source/sources subcommands)
+  netease_parser.py    - Link parsing and song download (core module) [796 lines]
+  netease_weapi.py     - Weapi encryption + Cookie management + VIP detection
+  music_sources.py     - Multi-source manager (config, fallback, management)
+  yuafeng_api.py       - yuafeng.cn 3rd-party download API
+  ncm_decryptor.py     - NCM file decryption
+  requirements.txt     - pycryptodome, requests
+  netease_cookie.txt   - NetEase login cookie (auto-saved, MUSIC_U=xxx format)
+  source_config.json   - Source preferences (preferred/disabled/custom URLs)
+  dev_doc.txt          - This file
+  使用教程.txt           - User tutorial (Chinese)
+
+================================================================================
+2. Download Pipeline (Priority Order)
+================================================================================
+
+  1. NetEase old API (/api/song/enhance/player/url) - FREE songs -> FLAC/MP3
+  2. NetEase old API + Cookie (MUSIC_U)             - VIP songs  -> FLAC/MP3
+  3. yuafeng.cn multi-platform (kw/kg/wy/tx)        - FALLBACK   -> M4A (128kbps)
+  4. znnu.com proxy                                  - DOWN (500 upstream failure)
+
+  If all above fail, download_song() fallback calls:
+    music_sources.download_with_fallback(song_name, artist, ...)
+    -> tries preferred source, then other enabled sources
+    -> all routed through yuafeng_api.download_song_by_name()
+
+  After download: Content-Type header is checked and file extension is corrected
+  if needed (e.g., server returns audio/flac but filename had .mp3).
+
+================================================================================
+3. netease_parser.py - Core Module (796 lines)
+================================================================================
+
+  [get_playlist] - line 166 - Fetches ALL tracks (54+, not just 10)
+    - Primary: v6 API (/api/v6/playlist/detail?id=XXX) -> gets all trackIds[]
+    - Batch:   /api/song/detail?ids=[...]  (up to 100 IDs per batch)
+    - Rate limit: 0.3s delay between batches
+    - Fallback: Standard API (/api/playlist/detail?id=XXX) -> partial tracks
+    - Fallback: znnu.com proxy (DOWN)
+
+  [get_album] - Fetches album info with all tracks
+
+  [get_song_url] - line 557 - 4-tier fallback
+    1. _get_song_url_netease()     - Old API (checks fee==1 for VIP)
+    2. netease_weapi.get_song_download_url() - Cookie-based auth
+    3. _get_song_url_yuafeng()     - yuafeng.cn search (M4A only)
+    4. znnu.com proxy              - DOWN
+
+  [download_song] - line 648 - Song download with multi-source fallback
+    - Params: song_id, output_dir, level, raw_input, song_name, artist, use_yuafeng
+    - Tries normal flow first, then music_sources.download_with_fallback()
+    - Content-Type detection for correct file extension
+    - Safe filename generation (strips illegal Windows chars)
+
+  [download_album] - line 797 - Batch download all album tracks
+
+  [download_playlist] - Batch download all playlist tracks
+
+  [znnu.com Signature] (DOWN but code preserved)
+    HMAC_KEY = "a09d0f3700a279584e1515354fbe08a7..."
+    sign = HMAC-SHA256(timestamp + "music.znnu.com" + sorted_params)
+    Response: AES-256-GCM encrypted
+
+================================================================================
+4. netease_weapi.py - Weapi Encryption + Cookie
+================================================================================
+
+  [Weapi Algorithm]
+    1. Generate random 16-byte AES key
+    2. JSON params -> AES-128-CBC encrypt (IV="0102030405060708", PKCS7 pad)
+    3. Base64 encode -> "params" field
+    4. RSA encrypt AES key -> "encSecKey" field (hex, reversed)
+    - RSA: 1024-bit public key, exponent e=0x010001 (65537)
+    - Key extracted from NetEase PEM certificate
+
+  [Cookie Management]
+    set_cookie(str, save=True)  - line 64   - Set and optionally persist
+    clear_cookie()              - line 86   - Clear from memory+file
+    has_cookie() -> bool        - line 95   - Check if cookie is set
+    is_vip() -> Optional[bool]  - line 100  - Test VIP status
+    Cookie file: netease_cookie.txt (auto-loaded on module import)
+
+  [VIP Detection] (is_vip(), line 100)
+    - Tests with known VIP song (id=1357375695, Beyond - Boundless Oceans)
+    - Requests old API download URL with cookie
+    - If URL returned -> VIP active (True)
+    - If 403/empty -> VIP expired or not VIP (False)
+    - If network error -> None (unknown)
+
+  IMPORTANT: weapi endpoint (/weapi/song/enhance/player/url/v1) returns empty
+  responses even with valid encryption. Cookie-based VIP auth uses the OLD API
+  endpoint (/api/song/enhance/player/url) with MUSIC_U cookie in headers.
+  This works correctly for VIP FLAC downloads.
+
+================================================================================
+5. music_sources.py - Multi-Source Manager
+================================================================================
+
+  [Built-in Source Config URLs] (SOURCE_URLS list)
+    - https://musicapi.haitangw.net/music.json
+    - https://13413.kstore.vip/QingMusic/music.json
+    - User can add custom URLs -> saved in source_config.json
+
+  [Key Functions]
+    _load_config()              - line 44   - Load source_config.json
+    _save_config(cfg)           - line 59   - Save source_config.json
+    get_source_config()         - line 68   - Get current config dict
+    set_preferred_source(id)    - line 73   - Set preferred source
+    toggle_source(id) -> bool   - line 80   - Toggle source on/off
+    add_custom_url(url)         - line 94   - Add custom source URL
+    remove_custom_url(url)      - line 103  - Remove custom source URL
+    get_all_urls()              - line 112  - Get all URLs (builtin + custom)
+    get_all_sources()           - line 118  - Get all sources with status
+    list_sources()              - line 138  - Print sources to console
+    fetch_source_configs()      - line 161  - Fetch configs from URLs
+    get_enabled_sources()       - line 193  - Get only user-enabled sources
+    check_source_health()       - line 208  - Health check all source URLs
+    download_via_yuafeng()      - line 229  - Download via yuafeng API by source
+    download_with_fallback()    - line 243  - Multi-source fallback download
+
+  [Source Categories in Configs]
+    Each config URL returns a JSON object with source IDs as keys (wy, kg, kw, tx, mg).
+    Each source has: name, type, levels (quality tiers).
+
+================================================================================
+6. yuafeng_api.py - 3rd-Party Download API
+================================================================================
+
+  _check_key()                - line 34   - API key validation
+  search_music(keyword, src)  - line 44   - Search across platforms
+  get_download_url_by_name()  - line 81   - Get download URL by song+artist
+  download_song_by_name()     - line 125  - Download by song name + artist
+
+  Note: yuafeng.cn API always returns QQ Music C400 M4A (128kbps).
+  It does NOT provide FLAC quality regardless of source (wy/kg/kw/tx/mg).
+  This is a fallback-only API, not suitable for lossless downloads.
+
+================================================================================
+7. ncm_decryptor.py - NCM File Decryption
+================================================================================
+
+  [NCM Format]
+    - NetEase encrypted music file (.ncm extension)
+    - Header: 10 bytes + DWORD key_len + DWORD meta_len + key_data + meta_data
+    - After meta: 5 bytes + album_image + actual audio data
+
+  [Decryption Steps]
+    1. Read key_data (RC4 encrypted AES key)
+    2. RC4 decrypt key_data with CORE_KEY (=687A4852416D736F356B496E62617857)
+    3. PKCS7 unpad, slice [17:] -> AES key
+    4. Build static RC4 S-box (NOT standard RC4 - S-box unchanged after init)
+    5. meta_data XOR with 0x63
+    6. Parse: first 22 bytes identifier + base64 encoded metadata
+    7. AES-128-ECB decrypt with META_KEY (=2331346C6A6B5F215C5D2630553C2728)
+    8. Audio: static keystream RC4 (starts from index 1 in keystream)
+
+  [Common Bugs]
+    - Wrong CORE_KEY -> decrypt failure (wrong audio output)
+    - Standard RC4 (self-modifying S-box) -> corrupted audio
+    - Artist field format: [["name", intID], ...]
+
+  [Usage]
+    python ncm_decryptor.py <file|folder> [-o output_dir]
+
+================================================================================
+8. gui.py - Graphical Interface (476 lines)
+================================================================================
+
+  [Architecture]
+    - tkinter + ttk, two tabs: Parse+Download, NCM Decrypt
+    - Background tasks run in daemon threads
+    - Fully Chinese UI
+
+  [Parse+Download Tab]
+    - Link/ID input field, Quality selector (标准/较高/极高/无损)
+    - Output directory selector
+    - Source status row: [检查源] [管理源] buttons
+    - Cookie status row: [设置Cookie] button, shows VIP status
+    - [显示信息] [下载] buttons
+    - Log area with scrollbar
+
+  [NCM Decrypt Tab]
+    - File/Folder input, Output directory
+    - [解密] button, progress bar, log area
+
+  [Key Methods]
+    _check_sources()         - line 341  - Source health check (background thread)
+    _set_cookie()            - line 368  - Cookie input dialog
+    _update_cookie_status()  - line 412  - Update VIP status display
+    _manage_sources()        - line 437  - Source management dialog
+
+  [Source Management Dialog] (line 437)
+    - TreeView: Status, Pref, ID, Name, 音质等级
+    - [启用/禁用] toggle source on/off
+    - [设为首选] set preferred source
+    - [刷新] refresh list
+    - Custom URL section: add/remove custom source URLs
+    - [B]=内置 [C]=自定义 indicators
+
+================================================================================
+9. main.py - CLI Commands
+================================================================================
+
+  python main.py parse <link> [--level lossless] [-o dir] [--info-only]
+    Parse and optionally download playlist/album/song
+    --level: lossless (FLAC), hires (high quality), standard (MP3)
+
+  python main.py decrypt <file|folder> [-o dir]
+    Decrypt .ncm files
+
+  python main.py cookie status|set|clear [value]
+    Manage NetEase cookie (MUSIC_U)
+    set: python main.py cookie set "MUSIC_U=your_cookie_value"
+
+  python main.py source list|toggle|prefer|add-url|remove-url [value]
+    Manage music sources
+    toggle: python main.py source toggle kg
+    prefer: python main.py source prefer wy
+    add-url: python main.py source add-url "https://example.com/music.json"
+
+  python main.py sources
+    Check health of all configured source URLs
+
+================================================================================
+10. Dependencies
+================================================================================
+
+  pycryptodome >= 3.20.0  - AES/RSA encryption (weapi + NCM decrypt)
+  requests >= 2.31.0      - HTTP requests
+  tkinter                  - GUI (built into Python, no pip needed)
+  mutagen                  - Audio metadata (optional, testing only)
+
+  Install: pip install -r requirements.txt
+
+================================================================================
+11. Configuration Files
+================================================================================
+
+  [netease_cookie.txt]
+    Format: "MUSIC_U=xxxxxxxxx..." (plain cookie value)
+    Auto-loaded on netease_weapi module import
+    Auto-saved when set_cookie() called with save=True
+
+  [source_config.json]
+    {
+      "preferred": "wy",         // Preferred source ID
+      "disabled": ["mg"],        // Disabled source IDs
+      "custom_urls": []          // User-added source config URLs
+    }
+
+================================================================================
+12. Known Issues & Troubleshooting
+================================================================================
+
+  [FLAC Availability]
+    - Free songs:        NetEase old API -> FLAC (standard/320k/FLAC)
+    - VIP + valid Cookie: NetEase old API + MUSIC_U -> FLAC
+    - VIP expired cookie: Falls back to standard quality MP3 or yuafeng M4A
+    - yuafeng.cn:        Always QQ Music C400 M4A (128kbps), NO FLAC
+
+  [Down / Dead APIs - Do not try to revive]
+    - music.znnu.com proxy:        upstream connection failed (500)
+    - music.haitangw.cc/kg.php:    code=401 "has not any level"
+    - 175.27.166.236/wy.php:       code=201, cookie expired
+
+  [Encoding Issues]
+    - All .py files MUST be UTF-8 without BOM (Byte Order Mark)
+    - BOM (EF BB BF) causes Python import failures
+    - PowerShell "Out-File -Encoding UTF8" adds BOM by default
+    - Use: [System.Text.UTF8Encoding]::new($false) to write without BOM
+    - Or use: Set-Content with -Encoding UTF8NoBOM
+    - Or use: Python open(file, 'w', encoding='utf-8') which does NOT add BOM
+
+  [Python f-string Limitations]
+    - Cannot use same quote type inside f-string expression (Python < 3.12)
+      Bad:  f"{name["key"]}"       Good: f'{name["key"]}'
+    - Cannot contain backslash in expression
+      Bad:  f"{name\n}"           Good: use intermediate variable
+
+  [Playlist Limits]
+    - v6 API (/api/v6/playlist/detail) returns ALL trackIds (no limit)
+    - Batch fetch /api/song/detail?ids=[...] handles up to 100 per request
+    - Standard API (/api/playlist/detail) limits to ~10 tracks
+    - Confirmed working: 54-track playlist (id=9426599671) parses all tracks
+
+================================================================================
+13. Test Commands
+================================================================================
+
+  # Playlist parse test (should show all 54+ tracks)
+  python main.py parse --info-only "https://music.163.com/m/playlist?id=9426599671"
+
+  # Song download test
+  python main.py parse "https://music.163.com/song?id=1357375695" --level lossless
+
+  # Cookie management
+  python main.py cookie status
+  python main.py cookie set "MUSIC_U=your_cookie_value_here"
+
+  # Source management
+  python main.py source list
+  python main.py source toggle kg
+
+  # Source health check
+  python main.py sources
+
+  # NCM decrypt
+  python ncm_decryptor.py "test.ncm"
+  python ncm_decryptor.py "folder_with_ncm_files" -o output
+
+  # FLAC verification after download
+  python -c "print(open('downloads/artist - song.flac','rb').read(4) == b'fLaC')"
+
+  # Check file encoding (no BOM expected)
+  python -c "b=open('netease_parser.py','rb').read(3); print('BOM' if b==b'\xef\xbb\xbf' else 'OK')"
+
+  # GUI startup
+  python gui.py
+
+================================================================================
+14. Quick Reference: Key Code Locations
+================================================================================
+
+  get_playlist              -> netease_parser.py:166   (v6 API + batch fetch)
+  get_album                 -> netease_parser.py
+  get_song_url              -> netease_parser.py:557   (4-tier fallback)
+  download_song             -> netease_parser.py:648   (download + content-type detection)
+  download_album            -> netease_parser.py:797   (batch album download)
+  download_playlist         -> netease_parser.py       (batch playlist download)
+  set_cookie                -> netease_weapi.py:64     (cookie persistence)
+  clear_cookie              -> netease_weapi.py:86     (clear cookie)
+  has_cookie                -> netease_weapi.py:95     (cookie check)
+  is_vip                    -> netease_weapi.py:100    (VIP detection)
+  get_all_sources           -> music_sources.py:118    (all sources with status)
+  get_enabled_sources       -> music_sources.py:193    (user-preference filter)
+  check_source_health       -> music_sources.py:208    (source health)
+  download_with_fallback    -> music_sources.py:243    (multi-source fallback)
+  _check_sources (GUI)      -> gui.py:341              (source health button)
+  _set_cookie (GUI)         -> gui.py:368              (cookie input dialog)
+  _update_cookie_status (GUI)-> gui.py:412             (VIP status display)
+  _manage_sources (GUI)     -> gui.py:437              (source management dialog)
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
